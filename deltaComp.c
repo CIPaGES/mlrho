@@ -131,15 +131,25 @@ double myF(const gsl_vector* v, void *params){
 void lik(Node *p, double pi, double ee, double de){
   double l, lOneA, lOneB, lTwoA, lTwoB;
   double h0, h2;
+  int profile1[4], profile2[4];
+  int i, c1, c2;
 
   if(p != NULL){
     lik(p->left, pi, ee, de);
+    sscanf(p->key,"%d %d %d %d %d %d %d %d",&profile1[0],&profile1[1],&profile1[2],&profile1[3], \
+	   &profile2[0],&profile2[1],&profile2[2],&profile2[3]);
+    c1 = 0; 
+    c2 = 0;
+    for(i=0;i<4;i++){
+      c1 += profile1[i];
+      c2 += profile2[i];
+    }
     h0 = 1/(1+pi)/(1+pi)+de*pi/(1+pi)/(1+pi);
     h2 = pi*pi/(1+pi)/(1+pi)+de*pi/(1+pi)/(1+pi);
-    lOneA = lOne(p->c1, p->profile, ee);
-    lOneB = lOne(p->c2, p->profile + 4, ee);
-    lTwoA = lTwo(p->c1, p->profile, ee);
-    lTwoB = lTwo(p->c2, p->profile + 4, ee);
+    lOneA = lOne(c1, profile1, ee);
+    lOneB = lOne(c2, profile2, ee);
+    lTwoA = lTwo(c1, profile1, ee);
+    lTwoB = lTwo(c2, profile2, ee);
     l = h0*lOneA*lOneB+h2*lTwoA*lTwoB			\
       + 0.5*(1-h0-h2)*(lOneA*lTwoB+lTwoA*lOneB);
     if(l>0)

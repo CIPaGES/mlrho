@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lm:S:b:";
+  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -35,6 +35,7 @@ Args *getArgs(int argc, char *argv[]){
   args->f = 0;
   args->m = 1;
   args->l = 0;
+  args->L = 0;
   args->r = 0;
   args->h = 0;
   args->e = 0;
@@ -88,6 +89,9 @@ Args *getArgs(int argc, char *argv[]){
     case 'l':                           /* estimate delta */
       args->l = 1;
       break;
+    case 'L':                           /* lump "step" distance classes? */
+      args->L = 1;
+      break;
     case 'r':                           /* print profiles */
       args->r = 1;
       break;
@@ -122,18 +126,12 @@ void printUsage(char *version){
   printf("mlRho version %s\n", version);
   printf("purpose: maximum likelihood estimation of theta and rho\n");
   printf("usage: mlRho [options] [inputFile(s)]\n");
-  printf("options:\n");
+  printf("standard options:\n");
   printf("\t[-c <NUM> minimum coverage; default: %d]\n",MIN_COV);
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
-  printf("\t[-P <NUM> initial theta value; default: %10.3e]\n",INI_PI);
-  printf("\t[-E <NUM> initial epsilon value; default: %10.3e]\n",INI_EPSILON);
-  printf("\t[-R <NUM> initial rho value; default: %10.3e]\n",INI_RHO);
-  printf("\t[-D <NUM> initial delta value; default: %10.3e]\n",INI_DELTA);
-  printf("\t[-t <NUM> simplex size threshold; default: %10.3e]\n",THRESHOLD);
-  printf("\t[-s <NUM> size of first step in ML estimation; default: %10.3e]\n",STEP_SIZE);
-  printf("\t[-b <NUM> size of buffer for reading input; default: %d]\n",DEFAULT_B);
+  printf("\t[-L lump -S distance classes; default: no lumping]\n");
   printf("\t[-l estimate delta; default: estimate rho]\n");
   printf("\t[-r print profiles and exit]\n");
   printf("\t[-T test mode for linkage analysis]\n");
@@ -141,6 +139,14 @@ void printUsage(char *version){
   printf("\t\tdefault: use initial estimates of \\epsilon and \\theta]\n");
   printf("\t[-p print information about program and exit]\n");			     
   printf("\t[-h print this help message and exit]\n");
+  printf("extra options:\n");
+  printf("\t[-P <NUM> initial theta value; default: %10.3e]\n",INI_PI);
+  printf("\t[-E <NUM> initial epsilon value; default: %10.3e]\n",INI_EPSILON);
+  printf("\t[-R <NUM> initial rho value; default: %10.3e]\n",INI_RHO);
+  printf("\t[-D <NUM> initial delta value; default: %10.3e]\n",INI_DELTA);
+  printf("\t[-t <NUM> simplex size threshold; default: %10.3e]\n",THRESHOLD);
+  printf("\t[-s <NUM> size of first step in ML estimation; default: %10.3e]\n",STEP_SIZE);
+  printf("\t[-b <NUM> size of buffer for reading input; default: %d]\n",DEFAULT_B);
   exit(0);
 }
 

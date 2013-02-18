@@ -108,18 +108,19 @@ double myP(const gsl_vector* v, void *params){
 /* lik: traverse profile tree and compute likelihood */
 void likP(Node *p, double pi, double ee){
   double l;
-
-  /* printf("likP - p->c1: %d; pi: %f\n",p->c1, pi); */
+  int i, c;
+  int profile[4];
   
   if(p != NULL){
     likP(p->left, pi, ee);
-
-    l = lOne(p->c1, p->profile, ee) * (1.0 - pi)	\
-      + lTwo(p->c1, p->profile, ee) * pi;
-    if(l>0){
+    sscanf(p->key,"%d %d %d %d",&profile[0],&profile[1],&profile[2],&profile[3]);
+    c = 0;
+    for(i=0;i<4;i++)
+      c += profile[i];
+    l = lOne(c, profile, ee) * (1.0 - pi)	\
+      + lTwo(c, profile, ee) * pi;
+    if(l>0)
       likelihood += (log(l) * p->n);
-    }
-
     likP(p->right, pi, ee);
   }
 }

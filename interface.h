@@ -32,6 +32,7 @@ typedef struct args{
   int m;    /* minimum distance in LD analysis */
   int M;    /* maximum distance in LD analysis */
   char l;   /* compute delta */
+  char L;   /* lump the number distance classes indicated by "step"? */
   char r;   /* print profiles and exit */
   char p;   /* print program information */
   char f;   /* full likelihood analysis over varying distances */
