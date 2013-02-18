@@ -1,0 +1,13 @@
+mlRho - Maximum Likelihood Estimation of Mutation and Recombination Rate
+Bernhard Haubold Peter Pfaffelhuber and Michael Lynch
+
+@Article{hau09:mlr,
+  author = 	 {Haubold, B. and Pfaffelhuber, P. and Lynch, M.},
+  title = 	 {\ty{mlRho}: A program for estimating the population mutation and recombination rates from shotgun-sequenced diploid genomes},
+  journal = 	 {Molecular Ecology},
+  year = 	 2009,
+  volume = 	 {submitted}}
+
+Documentation: mlRhoDoc.pdf
+License: Gnu GPL
+Contact: haubold@evolbio.mpg.de
