@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
   char *version;
   int i, fd;
 
-  version = "1.16";
+  version = "1.19";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -35,12 +35,13 @@ int main(int argc, char *argv[]){
     close(fd);
   }
   free(args);
+  freeProfileTree();
   free(progname());
   return 0;
 }
 
 void runAnalysis(int fd, Args *args, char *inFile){
-  Node *root;
+  Node *indivTree, *pairwTree;
   Result *r;
   int i, status;
   char *headerPi, *headerDelta, *headerRho, *outStrPi; 
@@ -60,7 +61,7 @@ void runAnalysis(int fd, Args *args, char *inFile){
   outStrRho4 = "%d\t%0f\t%s\t%s\t%s\t%s\n";
   r = (Result *)emalloc(sizeof(Result));
   /* heterozygosity analysis */
-  root = getProfileTree(fd,args, 0);
+  indivTree = getProfileTree(fd,args, 0);
   numPos = getNumPos();
   if(args->M == 0 && numPos)
     printf("%s", headerPi);
@@ -71,11 +72,10 @@ void runAnalysis(int fd, Args *args, char *inFile){
       printf("%s", headerRho);
   }
   if(numPos){
-    estimatePi(root,args,r);
+    estimatePi(indivTree,args,r);
     printf(outStrPi,0,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l);
   }
   fflush(NULL);
-  freeTree(root);
   /* linkage analysis */
   if(args->T)
     setTestMode();
@@ -86,48 +86,49 @@ void runAnalysis(int fd, Args *args, char *inFile){
     rhoSetPi(r->pi);
     rhoSetEpsilon(r->ee);
   }
-  if(numPos > 1){
+  if(getNumPos() > 1){
     for(i=args->m;i<=args->M;i+=args->S){
       lseek(fd, 0L, 0);
-      root = getProfileTree(fd,args, i);
+      pairwTree = getProfileTree(fd,args, i);
       if(args->f){
 	if(args->l){
-	  estimateDelta(root, args, r, 3);
-	  printf(outStrDelta1,i,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
+	  estimateDelta(pairwTree, args, r, 3);
+	  printf(outStrDelta1,i,getNumPos(),r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
 		 r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
 	}else{
-	  status = estimateRho(root, args, r, 3);
+	  status = estimateRho(pairwTree, args, r, 3);
 	  if(!status){
 	    r->rh  /= (double)i;
 	    r->rLo /= (double)i;
 	    if(r->rUp != 1.0)
 	      r->rUp /= (double)i;
-	    printf(outStrRho1,i,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
+	    printf(outStrRho1,i,getNumPos(),r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
 		   r->rLo,r->rh,r->rUp);
 	  }else
-	    printf(outStrRho4,i,numPos,"n/a","n/a","n/a","n/a");
+	    printf(outStrRho4,i,getNumPos(),"n/a","n/a","n/a","n/a");
 	}
       }else{
 	if(args->l){
-	  estimateDelta(root, args, r, 1);
-	  printf(outStrDelta2,i,numPos,r->l,r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
+	  estimateDelta(pairwTree, args, r, 1);
+	  printf(outStrDelta2,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
 	}else{
-	  status = estimateRho(root, args, r, 1);
+	  status = estimateRho(pairwTree, args, r, 1);
 	  if(status == GSL_SUCCESS){
 	    r->rh  /= (double)i;
 	    r->rLo /= (double)i;
 	    if(r->rUp != 1.0)
 	      r->rUp /= (double)i;
-	    printf(outStrRho2,i,numPos,r->l,r->rLo,r->rh,r->rUp);
+	    printf(outStrRho2,i,getNumPos(),r->l,r->rLo,r->rh,r->rUp);
 	  }else{
-	    printf(outStrRho3,i,numPos,r->l,"n/a");
+	    printf(outStrRho3,i,getNumPos(),r->l,"n/a");
 	  }
 	}
       }
       fflush(NULL);
-      freeTree(root);
+      freeTree(pairwTree);
     }
   }
+  freeTree(indivTree);
   free(r);
 }
 

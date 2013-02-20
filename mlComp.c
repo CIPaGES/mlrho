@@ -36,8 +36,8 @@ void iniMlComp(Node *node, int d){
   totalNuc = 0;
   maxCov = 0;
   countNuc(root, d);
-  lngamma = (double *)emalloc((maxCov+1)*sizeof(double));
-  for(i=1;i<=maxCov;i++)
+  lngamma = (double *)emalloc((maxCov+2)*sizeof(double));
+  for(i=1;i<=maxCov+1;i++)
     lngamma[i] = gsl_sf_lngamma(i);
   for(i=0;i<4;i++){
     freqNuc[i] /= totalNuc;

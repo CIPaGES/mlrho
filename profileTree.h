@@ -8,16 +8,30 @@
 #define PROFILETREE
 #include <stdio.h>
 
+#define TMPFILE "tempFile.pro"
+
 typedef struct node{  /* the tree node: */
-  char *key;          /* points to the text */
-  int *profile1;      /* first profile */
-  int *profile2;      /* second profile */
+  char *key;          /* sort key */
+  int profile1[4];    /* first profile */
+  int profile2[4];    /* second profile */
   int c1;             /* coverage of first profile */
   int c2;             /* coverage of second profile */
   int n;              /* number of occurrences */
+  int id;             /* id of node */
   struct node *left;  /* left child */
   struct node *right; /* right child */
 }Node;
+
+typedef struct profile{
+  int pos;
+  int nodeIndex;
+}Profile;
+
+typedef struct contigDescr{
+  int n;                 /* number of contigs */
+  int *len;              /* contig lengths */
+  Profile *profileBuf;   /* buffer of profiles */
+}ContigDescr;
 
 Node *getProfileTree(int fd, Args *args, int d);
 void printTree(FILE *fp, Node *node);
@@ -25,8 +39,9 @@ void freeTree(Node *n);
 void setTestMode();
 double getNumPos();
 double getNumPosBam();
-Node *newNode(char *key, int count, int pair);
-Node *addTree(Node *node, char *key, int count, int pair);
+Node *newNode(char *key, int count, Node *n1, Node *n2);
+Node *addTree(Node *node, char *key, int count, Node *n1, Node *n2);
 int coverage(char *key, int d);
-
+ContigDescr *getContigDescr();
+void freeProfileTree();
 #endif
