@@ -282,10 +282,10 @@ Node *newNode(char *key, int count, int pair){
     sscanf(node->key,"%d %d %d %d",&node->profile1[0],&node->profile1[1],&node->profile1[2],&node->profile1[3]);
   }
   node->c1 = 0;
+  node->c2 = 0;
   for(i=0;i<4;i++)
     node->c1 += node->profile1[i];
   if(pair){
-    node->c2 = 0;
     for(i=0;i<4;i++)
       node->c2 += node->profile2[i];
   }

@@ -12,8 +12,8 @@ typedef struct node{  /* the tree node: */
   char *key;          /* points to the text */
   int *profile1;      /* first profile */
   int *profile2;      /* second profile */
-  int c1;             /* coverage 1 */
-  int c2;             /* coverage 2 */
+  int c1;             /* coverage of first profile */
+  int c2;             /* coverage of second profile */
   int n;              /* number of occurrences */
   struct node *left;  /* left child */
   struct node *right; /* right child */

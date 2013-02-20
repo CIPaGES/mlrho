@@ -31,8 +31,8 @@ typedef struct result{
 void estimatePi(Node *r, Args *args, Result *res);
 void estimateDelta(Node *r, Args *args, Result *res, int np);
 int estimateRho(Node *r, Args *args, Result *res, int np);
-inline double lOne(double cov, int *profile, double ee);
-inline double lTwo(double cov, int *profile, double ee);
+inline double lOne(int cov, int *profile, double ee);
+inline double lTwo(int cov, int *profile, double ee);
 void iniMlComp(Node *node, int d);
 void setPi(double pi);
 void setEpsilon(double ee);
