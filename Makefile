@@ -12,7 +12,7 @@ LIBS= -lm -lgsl -lgslcblas
 EXECFILE= mlRho
 DIRECTORY= MlRho
 
-VERSION= 1.10
+VERSION= 1.11
 
 # The make rule for the executable
 .PHONY : all

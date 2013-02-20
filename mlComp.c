@@ -56,33 +56,46 @@ void iniMlComp(Node *node, int d){
   
 }
 
-/* lOne: equation (4a) of Lynch (2008) */
+/* lOne: equation (4a) of Lynch (2008) as revised by Stephen Bates on June 24, 2012 */
 double lOne(double cov, int *profile, double ee){
   int i;
-  double s;
+  double s, compEe, eeThird, g;
 
   s = 0.0;
-  for(i=0;i<4;i++)
-    s += exp(logFreqNuc[i] + logBinProb(cov, cov-profile[i], ee));
+  compEe = 1.0 - ee;
+  eeThird = ee / 3.0;
+  g = 0.0;
+  for(i=0;i<4;i++){
+    s += freqNuc[i] * pow(compEe, profile[i]) * pow(eeThird,cov-profile[i]);
+    g += gsl_sf_lngamma(profile[i]+1);
+  }
+  g = exp(gsl_sf_lngamma(cov+1) - g);
+  s *= g;
 
   return s;
 }
 
-/* lTwo: equation (4b) of Lynch (2008) */
+/* lTwo: equation (4b) of Lynch (2008) as revised by Stephen Bates on June 24, 2012 */
 double lTwo(double cov, int *profile, double ee){
   int i, j;
-  double s;
+  double s, g, x, eeThird;
 
+  /* compute multinomial coefficient */
+  g = 0.0;
+  for(i=0;i<4;i++)
+    g += gsl_sf_lngamma(profile[i] + 1);
+  g = exp(gsl_sf_lngamma(cov+1) - g);
+
+  /* compute likelihood */
   s = 0.0;
+  x = (1.0-2.0*ee/3.0)/2.0;
+  eeThird = ee/3.0;
   for(i=0;i<4;i++)
     for(j=i+1;j<4;j++){
-
-      s += exp(lo2 + logFreqNuc[i] + logFreqNuc[j]    \
-	+ logBinProb(cov,cov-profile[i]-profile[j],2.0*ee/3.0) \
-	       + logBinProb(profile[i]+profile[j],profile[i],0.5) - logS);
-
+      s += freqNuc[i]*freqNuc[j]/S * pow(x,profile[i]+profile[j]) * pow(eeThird,cov-profile[i]-profile[j]);
     }
-  
+  s *= g;
+
   return s;
 }
 

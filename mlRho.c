@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
   char *version;
   int i, fd;
 
-  version = "1.10";
+  version = "1.11";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
