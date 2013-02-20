@@ -1,23 +1,27 @@
 CC=gcc
 CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
-	-I/opt/local/include/ -L/opt/local/lib/  #-g  #-p  -m64
+	-I/opt/local/include/ -I./samtools -L./samtools -L/opt/local/lib/ # -g  -p  #-m64
 
 # The source files, object files, libraries and executable name.
 SRCFILES= mlRho.c eprintf.c stringUtil.c interface.c profileTree.c tab.c mlComp.c piComp.c \
-	deltaComp.c rhoComp.c queue.c 
+	deltaComp.c rhoComp.c queue.c profileTreeBam.c
 OBJFILES= mlRho.o eprintf.o stringUtil.o interface.o profileTree.o tab.o mlComp.o piComp.o \
-	deltaComp.o rhoComp.o queue.o 
-LIBS= -lm -lgsl -lgslcblas
+	deltaComp.o rhoComp.o queue.o profileTreeBam.o samtools/libbam.a
+LIBS= -lm -lgsl -lgslcblas -lbam -lz -lm
 
 EXECFILE= mlRho
 DIRECTORY= MlRho
 
-VERSION= 1.11
+VERSION= 1.14
 
 # The make rule for the executable
 .PHONY : all
-all : $(EXECFILE)
+all : $(EXECFILE) samtools
 
+samtools:
+	cd samtools; make
+samtools/libbam.a: 
+	cd samtools; make
 $(EXECFILE) : $(OBJFILES)
 	$(CC) $(CFLAGS) -o $(EXECFILE) $(OBJFILES) $(LIBS)	
 
@@ -48,11 +52,13 @@ realClean:
 	rm -f *.o *~
 	cd TestMlPi; make clean
 	cd TestMlDelta; make clean
+	cd samtools; make clean;
 
 tarfile:
 	cd ../Doc; make clean; make pdf; cd ../$(DIRECTORY)_$(VERSION)
 	mkdir $(DIRECTORY)_$(VERSION)
-	cp -rf $(SRCFILES) *.h  Makefile README COPYING test.pro \
+	cd samtools; make clean; cd ..
+	cp -rf $(SRCFILES) valgrind.sh *.h  Scripts samtools Makefile README COPYING test.pro \
 	../Doc/mlRhoDoc.pdf $(DIRECTORY)_$(VERSION)
 	mkdir $(DIRECTORY)_$(VERSION)/TestMlPi 
 	cp TestMlPi/*.c TestMlPi/*.h TestMlPi/README TestMlPi/Makefile $(DIRECTORY)_$(VERSION)/TestMlPi
@@ -60,4 +66,4 @@ tarfile:
 	cp TestMlDelta/*.c TestMlDelta/*.h TestMlDelta/Makefile $(DIRECTORY)_$(VERSION)/TestMlDelta
 	tar cvzfh $(EXECFILE)_$(VERSION).tgz $(DIRECTORY)_$(VERSION)
 	mv $(EXECFILE)_$(VERSION).tgz ../
-	/bin/rm -r $(DIRECTORY)_$(VERSION)
+	/bin/rm -rf $(DIRECTORY)_$(VERSION)

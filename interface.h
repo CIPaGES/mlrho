@@ -25,6 +25,7 @@ typedef struct args{
   double t; /* threshold of simplex size */
   double s; /* step size in ML analysis */
   int b;    /* buffer size */
+  int B;    /* BAM file input */
   int S;    /* step size in LD analysis */
   int d;    /* distance for H0 and H2 computation */
   int i;    /* maximum number of iterations */
@@ -32,14 +33,16 @@ typedef struct args{
   int m;    /* minimum distance in LD analysis */
   int M;    /* maximum distance in LD analysis */
   char l;   /* compute delta */
-  char L;   /* lump the number distance classes indicated by "step"? */
+  char L;   /* lump the number of distance classes indicated by "step"? */
   char r;   /* print profiles and exit */
   char p;   /* print program information */
   char f;   /* full likelihood analysis over varying distances */
   char T;   /* test mode */
+  char u;   /* input in summary format */
   char h;   /* help message? */
   char e;   /* error message? */
   char **inputFiles;
+  char *g;  /* BAM region */
   int numInputFiles;
 } Args;
 

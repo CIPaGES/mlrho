@@ -17,11 +17,9 @@
 #include "profileTree.h"
 #include "queue.h"
 
-Node *newNode(char *key);
-Node *addTree(Node *node, char *key);
-int coverage(char *key, int d);
 Node *getPairwProfiles(Node *root, int fd, Args *args, int d);
 Node *getIndivProfiles(Node *root, int fd, Args *args);
+Node *getSummarizedProfiles(Node *root, int fd, Args *args);
 
 char testMode = 0;
 double numPos;
@@ -33,6 +31,10 @@ Node *getProfileTree(int fd, Args *args, int d)
 
   root = NULL;
   numPos = 0;
+  if(args->u){
+    root = getSummarizedProfiles(root, fd, args);
+    return root;
+  }
   if(d){
     if(args->L){
       for(i=0;i<args->S;i++)
@@ -45,14 +47,50 @@ Node *getProfileTree(int fd, Args *args, int d)
   return root;
 }
 
+Node *getSummarizedProfiles(Node *root, int fd, Args *args){
+  FILE *fp;
+  int count, i, status, pair;
+  char **strArr, *key;
+
+  pair = 0;
+  strArr = (char **)emalloc(4*sizeof(char *));
+  for(i=0;i<4;i++)
+    strArr[i] = (char *)emalloc(10*sizeof(char));
+  key = (char *)emalloc(100*sizeof(char));
+  fp = fdopen(fd,"r");
+  if(fp == NULL){
+    printf("ERROR: could not open file.\n");
+    exit(-1);
+  }
+  while((status = fscanf(fp,"%d\t%s\t%s\t%s\t%s\n",&count,strArr[0],strArr[1],strArr[2],strArr[3])) != EOF){
+    key[0] = '\0';
+    for(i=0;i<3;i++){
+      strcat(key,strArr[i]);
+      strcat(key, " ");
+    }
+    strcat(key,strArr[3]);
+    if(coverage(key, 0) >= args->c){
+      numPos += count;
+      root = addTree(root,key,count,pair);
+    }
+  }
+  for(i=0;i<4;i++)
+    free(strArr[i]);
+  free(strArr);
+  free(key);
+  fclose(fp);
+  return root;
+}
+
 /* getProfileTree: get tree of profiles for specific profile distance, d, from file */
 Node *getPairwProfiles(Node *root, int fd, Args *args, int d)
 {
   char *buf, *key, *line;
   QueueItem *end, *start, **qiStore;
-  int n, i, j, l, numStore;
+  int n, i, j, l, numStore, pair;
   short headerOpen;
 
+  pair = 1;
   lseek(fd, 0L, 0);
   buf = (char *)emalloc(args->b*sizeof(char));
   line = (char *)emalloc(100*sizeof(char));
@@ -105,11 +143,11 @@ Node *getPairwProfiles(Node *root, int fd, Args *args, int d)
 		if(args->T){
 		  if(start->pos % 2 != 0){
 		    numPos++;
-		    root = addTree(root,key);
+		    root = addTree(root,key,1,pair);
 		  }
 		}else{
 		  numPos++;
-		  root = addTree(root,key);
+		  root = addTree(root,key,1,pair);
 		}
 	      }
 	    }
@@ -134,7 +172,7 @@ Node *getIndivProfiles(Node *root, int fd, Args *args)
 {
   char *buf, *key, *line;
   QueueItem *qi;
-  int n, i, j, l;
+  int n, i, j, l, pair;
   short headerOpen;
   
   root = NULL;
@@ -143,12 +181,13 @@ Node *getIndivProfiles(Node *root, int fd, Args *args)
   key = (char *)emalloc(100*sizeof(char));
   qi = newQueueItem();
   headerOpen = 0;
+  pair = 0;
   l = 0;
   while((n = read(fd, buf, args->b)) > 0){
     for(i=0; i<n; i++){
       if(buf[i] == '>'){
 	headerOpen = 1;
-      }else if(headerOpen && buf[i] == '\n'){  /* reache end of header */
+      }else if(headerOpen && buf[i] == '\n'){  /* reach end of header */
 	headerOpen = 0;
       }else if(!headerOpen){
 	if(buf[i] != '\n')
@@ -165,7 +204,7 @@ Node *getIndivProfiles(Node *root, int fd, Args *args)
 	  strcat(key,qi->profile[j]);
 	  if(coverage(key, 0) >= args->c){
 	    numPos++;
-	    root = addTree(root,key);
+	    root = addTree(root,key,1,pair);
 	  }
 	}
       }
@@ -206,34 +245,50 @@ int coverage(char *key, int d){
 }
 
 /* addTree: add key to tree */
-Node *addTree(Node *node, char *key){
+Node *addTree(Node *node, char *key, int count, int pair){
   int cond;
 
   if(node == NULL)  /* new key has arrived */
-    node = newNode(key);
+    node = newNode(key,count,pair);
   else if((cond = strcmp(key, node->key)) == 0)
     node->n++;      /* repeated key */
   else if(cond < 0) /* descend into left subtree */
-    node->left = addTree(node->left, key);
+    node->left = addTree(node->left, key, count, pair);
   else              /* descend into right subtree */
-    node->right = addTree(node->right, key);
+    node->right = addTree(node->right, key, count, pair);
 
   return node;
 }
 
 /*newNode: generate and initialize new node */
-Node *newNode(char *key){
+Node *newNode(char *key, int count, int pair){
   Node *node;
-  int n;
+  int n, i;
 
   node = (Node *)emalloc(sizeof(Node));
   n = strlen(key) + 1;
   node->key = (char *)emalloc(n*sizeof(char));
   node->key = strncpy(node->key,key,n);
-  node->n = 1;
+  node->n = count;
   node->left = NULL;
   node->right = NULL;
-
+  node->profile1 = (int *)emalloc(sizeof(int)*4);
+  if(pair){
+    node->profile2 = (int *)emalloc(sizeof(int)*4);
+    sscanf(node->key,"%d %d %d %d %d %d %d %d",&node->profile1[0],&node->profile1[1],&node->profile1[2],&node->profile1[3], \
+	   &node->profile2[0],&node->profile2[1],&node->profile2[2],&node->profile2[3]);
+  }else{
+    node->profile1 = (int *)emalloc(sizeof(int)*4);
+    sscanf(node->key,"%d %d %d %d",&node->profile1[0],&node->profile1[1],&node->profile1[2],&node->profile1[3]);
+  }
+  node->c1 = 0;
+  for(i=0;i<4;i++)
+    node->c1 += node->profile1[i];
+  if(pair){
+    node->c2 = 0;
+    for(i=0;i<4;i++)
+      node->c2 += node->profile2[i];
+  }
   return node;
 }
 

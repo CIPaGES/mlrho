@@ -15,14 +15,14 @@
 #include "profileTree.h"
 #include "mlComp.h"
 
-void runAnalysis(int fd, Args *args);
+void runAnalysis(int fd, Args *args, char *inFile);
 
 int main(int argc, char *argv[]){
   Args *args;
   char *version;
   int i, fd;
 
-  version = "1.11";
+  version = "1.14";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
     printUsage(version);
   for(i=0;i<args->numInputFiles;i++){
     fd = open(args->inputFiles[i],O_RDONLY,0);
-    runAnalysis(fd, args);
+    runAnalysis(fd, args, args->inputFiles[i]);
     close(fd);
   }
   free(args);
@@ -39,13 +39,14 @@ int main(int argc, char *argv[]){
   return 0;
 }
 
-void runAnalysis(int fd, Args *args){
+void runAnalysis(int fd, Args *args, char *inFile){
   Node *root;
   Result *r;
   int i, status;
   char *headerPi, *headerDelta, *headerRho, *outStrPi; 
   char *outStrDelta1, *outStrDelta2;
-  char *outStrRho1, *outStrRho2, *outStrRho3, *outStrRho4;
+  char *outStrRho1, *outStrRho2, *outStrRho3, *outStrRho4;	
+  double numPos;
 
   headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
   headerDelta = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho=f(delta)\n";
@@ -59,18 +60,24 @@ void runAnalysis(int fd, Args *args){
   outStrRho4 = "%d\t%0f\t%s\t%s\t%s\t%s\n";
   r = (Result *)emalloc(sizeof(Result));
   /* heterozygosity analysis */
-  root = getProfileTree(fd,args, 0);
-  if(args->M == 0 && getNumPos())
+  if(args->B){
+    root = getProfileTreeBam(inFile,args,0);
+    numPos = getNumPosBam();
+  }else{
+    root = getProfileTree(fd,args, 0);
+    numPos = getNumPos();
+  }
+  if(args->M == 0 && numPos)
     printf("%s", headerPi);
   else{
-    if(args->l && getNumPos() > 1)
+    if(args->l && numPos > 1)
       printf("%s", headerDelta);
-    else if(!args->l && getNumPos() > 1)
+    else if(!args->l && numPos > 1)
       printf("%s", headerRho);
   }
-  if(getNumPos()){
+  if(numPos){
     estimatePi(root,args,r);
-    printf(outStrPi,0,getNumPos(),r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l);
+    printf(outStrPi,0,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l);
   }
   fflush(NULL);
   freeTree(root);
@@ -84,14 +91,14 @@ void runAnalysis(int fd, Args *args){
     rhoSetPi(r->pi);
     rhoSetEpsilon(r->ee);
   }
-  if(getNumPos() > 1){
+  if(numPos > 1){
     for(i=args->m;i<=args->M;i+=args->S){
       lseek(fd, 0L, 0);
       root = getProfileTree(fd,args, i);
       if(args->f){
 	if(args->l){
 	  estimateDelta(root, args, r, 3);
-	  printf(outStrDelta1,i,getNumPos(),r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
+	  printf(outStrDelta1,i,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
 		 r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
 	}else{
 	  status = estimateRho(root, args, r, 3);
@@ -100,15 +107,15 @@ void runAnalysis(int fd, Args *args){
 	    r->rLo /= (double)i;
 	    if(r->rUp != 1.0)
 	      r->rUp /= (double)i;
-	    printf(outStrRho1,i,getNumPos(),r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
+	    printf(outStrRho1,i,numPos,r->pLo,r->pi,r->pUp,r->eLo,r->ee,r->eUp,r->l, \
 		   r->rLo,r->rh,r->rUp);
 	  }else
-	    printf(outStrRho4,i,getNumPos(),"n/a","n/a","n/a","n/a");
+	    printf(outStrRho4,i,numPos,"n/a","n/a","n/a","n/a");
 	}
       }else{
 	if(args->l){
 	  estimateDelta(root, args, r, 1);
-	  printf(outStrDelta2,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
+	  printf(outStrDelta2,i,numPos,r->l,r->dLo,r->de,r->dUp,r->rhoFromDelta/(double)i);
 	}else{
 	  status = estimateRho(root, args, r, 1);
 	  if(status == GSL_SUCCESS){
@@ -116,9 +123,9 @@ void runAnalysis(int fd, Args *args){
 	    r->rLo /= (double)i;
 	    if(r->rUp != 1.0)
 	      r->rUp /= (double)i;
-	    printf(outStrRho2,i,getNumPos(),r->l,r->rLo,r->rh,r->rUp);
+	    printf(outStrRho2,i,numPos,r->l,r->rLo,r->rh,r->rUp);
 	  }else{
-	    printf(outStrRho3,i,getNumPos(),r->l,"n/a");
+	    printf(outStrRho3,i,numPos,r->l,"n/a");
 	  }
 	}
       }

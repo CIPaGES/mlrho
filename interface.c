@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:";
+  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:g:Bu";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -27,11 +27,14 @@ Args *getArgs(int argc, char *argv[]){
   args->t = THRESHOLD;
   args->c = MIN_COV;
   args->T = 0;
+  args->u = 0;
   args->s = STEP_SIZE;
   args->S = DEFAULT_S;
   args->i = MAX_IT;
   args->M = INT_MAX;
   args->b = DEFAULT_B;
+  args->g = NULL;
+  args->B = 0;
   args->f = 0;
   args->m = 1;
   args->l = 0;
@@ -53,8 +56,17 @@ Args *getArgs(int argc, char *argv[]){
     case 'D':                           /* initial disequilibrium coefficient, delta */
       args->D = atof(optarg);
       break;
+    case 'u':                           /* summary format? */
+      args->u = 1;
+      break;
     case 'R':                           /* initial recombination parameter, Rho */
       args->R = atof(optarg);
+      break;
+    case 'B':                           /* BAM input file */
+      args->B = 1;
+      break;
+    case 'g':                           /* BAM region */
+      args->g = optarg;
       break;
     case 't':                           /* simplex size threshold */
       args->t = atof(optarg);
@@ -131,10 +143,13 @@ void printUsage(char *version){
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
+  /* printf("\t[-B BAM format; default: profile]\n"); */
+  /* printf("\t[-g <STR> region in BAM file; e.g: %s; default: analyze whole file]\n","17:7512445-7513455"); */
   printf("\t[-L lump -S distance classes; default: no lumping]\n");
   printf("\t[-l estimate delta; default: estimate rho]\n");
   printf("\t[-r print profiles and exit]\n");
   printf("\t[-T test mode for linkage analysis]\n");
+  printf("\t[-u data in summary format; default: profiles]\n");
   printf("\t[-f full likelihood computation over varying distances (slow);\n");
   printf("\t\tdefault: use initial estimates of \\epsilon and \\theta]\n");
   printf("\t[-p print information about program and exit]\n");			     

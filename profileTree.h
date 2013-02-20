@@ -4,17 +4,37 @@
  * File created on Wed Feb 18 17:06:39 2009.
  * Distributed under the GNU General Public License
  **************************************************/
+#ifndef PROFILETREE
+#define PROFILETREE
 #include <stdio.h>
+#include "sam.h"
+
+typedef struct{
+  int beg;
+  int end;
+  samfile_t *in;
+} tmpstruct_t;
 
 typedef struct node{  /* the tree node: */
   char *key;          /* points to the text */
+  int *profile1;      /* first profile */
+  int *profile2;      /* second profile */
+  int c1;             /* coverage 1 */
+  int c2;             /* coverage 2 */
   int n;              /* number of occurrences */
   struct node *left;  /* left child */
   struct node *right; /* right child */
 }Node;
 
 Node *getProfileTree(int fd, Args *args, int d);
+Node *getProfileTreeBam(char *inFile, Args *args, int d);
 void printTree(FILE *fp, Node *node);
 void freeTree(Node *n);
 void setTestMode();
 double getNumPos();
+double getNumPosBam();
+Node *newNode(char *key, int count, int pair);
+Node *addTree(Node *node, char *key, int count, int pair);
+int coverage(char *key, int d);
+
+#endif

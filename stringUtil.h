@@ -49,3 +49,4 @@ WordNode *walloc(void);
 void treeprint(WordNode *p);
 void strtoupper(char *s, long l);
 void fprintnf(FILE *fp, char *str, int n);
+void itoa(int n, char s[]);

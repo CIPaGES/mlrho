@@ -2,22 +2,6 @@
  * Description: Collection of string handling functions.
  * Author: Bernhard Haubold, haubold@evolbio.mpg.de
  * File created on Sun Jun  6 10:02:16 2004.
- *
- * This file is part of kr.
- *
- *   kr is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
- *
- *   kr is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with kr; if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  ****************************************************************/
 #include <stdio.h>
 #include <string.h>
@@ -25,6 +9,23 @@
 #include <ctype.h>
 #include "stringUtil.h"
 #include "eprintf.h"
+
+/* itoa: convert n to characters in s 
+ * Source: Kernighan & Ritchie (1988). The C Programming Language. Prenice Hall, p. 64.
+ */
+void itoa(int n, char s[]){
+  int i, sign;
+  if((sign = n) < 0) /* record sign */
+    n = -n;          /* make n positive */
+  i = 0;
+  do{                /* generate digits in reverse order */
+    s[i++] = n % 10 + '0'; /* get next digit */
+  }while((n /= 10) > 0);   /* delete it */
+  if(sign < 0)
+    s[i++] = '-';
+  s[i] = '\0';
+  reverse(s);
+}
 
 /* chomp: remove carriage return from string */
 char *chomp(char *line){
