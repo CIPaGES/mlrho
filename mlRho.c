@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
   char *version;
   int i, fd;
 
-  version = "1.14";
+  version = "1.15";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -60,13 +60,8 @@ void runAnalysis(int fd, Args *args, char *inFile){
   outStrRho4 = "%d\t%0f\t%s\t%s\t%s\t%s\n";
   r = (Result *)emalloc(sizeof(Result));
   /* heterozygosity analysis */
-  if(args->B){
-    root = getProfileTreeBam(inFile,args,0);
-    numPos = getNumPosBam();
-  }else{
-    root = getProfileTree(fd,args, 0);
-    numPos = getNumPos();
-  }
+  root = getProfileTree(fd,args, 0);
+  numPos = getNumPos();
   if(args->M == 0 && numPos)
     printf("%s", headerPi);
   else{

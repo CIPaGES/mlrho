@@ -24,7 +24,7 @@ gsl_sf_result *result;
 void countNuc(Node *node, int d);
 double logBinProb(int n, int k, double p);
 void compS();
-
+inline double powInt(double x, int y);
 
 void iniMlComp(Node *node, int d){
   int i, j, status;
@@ -57,7 +57,7 @@ void iniMlComp(Node *node, int d){
 }
 
 /* lOne: equation (4a) of Lynch (2008) as revised by Stephen Bates on June 24, 2012 */
-double lOne(double cov, int *profile, double ee){
+inline double lOne(double cov, int *profile, double ee){
   int i;
   double s, compEe, eeThird, g;
 
@@ -66,7 +66,7 @@ double lOne(double cov, int *profile, double ee){
   eeThird = ee / 3.0;
   g = 0.0;
   for(i=0;i<4;i++){
-    s += freqNuc[i] * pow(compEe, profile[i]) * pow(eeThird,cov-profile[i]);
+    s += freqNuc[i] * powInt(compEe, profile[i]) * powInt(eeThird,cov-profile[i]);
     g += gsl_sf_lngamma(profile[i]+1);
   }
   g = exp(gsl_sf_lngamma(cov+1) - g);
@@ -76,7 +76,7 @@ double lOne(double cov, int *profile, double ee){
 }
 
 /* lTwo: equation (4b) of Lynch (2008) as revised by Stephen Bates on June 24, 2012 */
-double lTwo(double cov, int *profile, double ee){
+inline double lTwo(double cov, int *profile, double ee){
   int i, j;
   double s, g, x, eeThird;
 
@@ -92,11 +92,22 @@ double lTwo(double cov, int *profile, double ee){
   eeThird = ee/3.0;
   for(i=0;i<4;i++)
     for(j=i+1;j<4;j++){
-      s += freqNuc[i]*freqNuc[j]/S * pow(x,profile[i]+profile[j]) * pow(eeThird,cov-profile[i]-profile[j]);
+      s += freqNuc[i]*freqNuc[j]/S * powInt(x,profile[i]+profile[j]) * powInt(eeThird,cov-profile[i]-profile[j]);
     }
   s *= g;
 
   return s;
+}
+
+inline double powInt(double x, int y){
+  int i;
+  double p;
+
+  p = 1.;
+  for(i=0;i<y;i++)
+    p *= x;
+
+  return p;
 }
 
 double logBinProb(int n, int k, double p){

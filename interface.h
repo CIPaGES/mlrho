@@ -25,7 +25,6 @@ typedef struct args{
   double t; /* threshold of simplex size */
   double s; /* step size in ML analysis */
   int b;    /* buffer size */
-  int B;    /* BAM file input */
   int S;    /* step size in LD analysis */
   int d;    /* distance for H0 and H2 computation */
   int i;    /* maximum number of iterations */
@@ -42,7 +41,6 @@ typedef struct args{
   char h;   /* help message? */
   char e;   /* error message? */
   char **inputFiles;
-  char *g;  /* BAM region */
   int numInputFiles;
 } Args;
 

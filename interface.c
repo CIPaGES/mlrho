@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:g:Bu";
+  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:u";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -33,8 +33,6 @@ Args *getArgs(int argc, char *argv[]){
   args->i = MAX_IT;
   args->M = INT_MAX;
   args->b = DEFAULT_B;
-  args->g = NULL;
-  args->B = 0;
   args->f = 0;
   args->m = 1;
   args->l = 0;
@@ -61,12 +59,6 @@ Args *getArgs(int argc, char *argv[]){
       break;
     case 'R':                           /* initial recombination parameter, Rho */
       args->R = atof(optarg);
-      break;
-    case 'B':                           /* BAM input file */
-      args->B = 1;
-      break;
-    case 'g':                           /* BAM region */
-      args->g = optarg;
       break;
     case 't':                           /* simplex size threshold */
       args->t = atof(optarg);
@@ -143,8 +135,6 @@ void printUsage(char *version){
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
-  /* printf("\t[-B BAM format; default: profile]\n"); */
-  /* printf("\t[-g <STR> region in BAM file; e.g: %s; default: analyze whole file]\n","17:7512445-7513455"); */
   printf("\t[-L lump -S distance classes; default: no lumping]\n");
   printf("\t[-l estimate delta; default: estimate rho]\n");
   printf("\t[-r print profiles and exit]\n");
