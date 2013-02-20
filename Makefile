@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS= -Ofast -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
-	-I/opt/local/include/ -L/opt/local/lib/   #-g  #-p  #-m64
+CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 \
+	-I/opt/local/include/ -L/opt/local/lib/   -g  #-p  #-m64
 
 # The source files, object files, libraries and executable name.
 SRCFILES= mlRho.c eprintf.c stringUtil.c interface.c profileTree.c tab.c mlComp.c piComp.c \
@@ -12,7 +12,7 @@ LIBS= -lm -lgsl -lgslcblas -lz -lm
 EXECFILE= mlRho
 DIRECTORY= MlRho
 
-VERSION= 1.19
+VERSION= 1.21
 
 # The make rule for the executable
 .PHONY : all

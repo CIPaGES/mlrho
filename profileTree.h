@@ -22,26 +22,40 @@ typedef struct node{  /* the tree node: */
   struct node *right; /* right child */
 }Node;
 
-typedef struct profile{
-  int pos;
-  int nodeIndex;
+typedef struct profile{  /* profile written to disk: */
+  int profile[4];        /* profile */
+  int n;                 /* number of occurrences */
 }Profile;
+
+typedef struct position{
+  int pos;
+  int pro;
+}Position;
+
+/* typedef struct profile{ */
+/*   int pos; */
+/*   int nodeIndex; */
+/* }Profile; */
 
 typedef struct contigDescr{
   int n;                 /* number of contigs */
   int *len;              /* contig lengths */
-  Profile *profileBuf;   /* buffer of profiles */
+  Position *posBuf;      /* buffer of positions */
 }ContigDescr;
 
-Node *getProfileTree(int fd, Args *args, int d);
+Node *getProfileTree(FILE *fp, Args *args, int d);
 void printTree(FILE *fp, Node *node);
 void freeTree(Node *n);
 void setTestMode();
 double getNumPos();
+int getNumNode();
 double getNumPosBam();
 Node *newNode(char *key, int count, Node *n1, Node *n2);
 Node *addTree(Node *node, char *key, int count, Node *n1, Node *n2);
 int coverage(char *key, int d);
 ContigDescr *getContigDescr();
 void freeProfileTree();
+Node *getSummarizedProfiles(Args *args);
+FILE *iniLinkAna(Args *args);
+int getNumNode();
 #endif

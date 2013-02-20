@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:u";
+  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:n:";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -27,7 +27,7 @@ Args *getArgs(int argc, char *argv[]){
   args->t = THRESHOLD;
   args->c = MIN_COV;
   args->T = 0;
-  args->u = 0;
+  args->n = DEFAULT_N;
   args->s = STEP_SIZE;
   args->S = DEFAULT_S;
   args->i = MAX_IT;
@@ -54,8 +54,8 @@ Args *getArgs(int argc, char *argv[]){
     case 'D':                           /* initial disequilibrium coefficient, delta */
       args->D = atof(optarg);
       break;
-    case 'u':                           /* summary format? */
-      args->u = 1;
+    case 'n':                           /* name of database */
+      args->n = optarg;
       break;
     case 'R':                           /* initial recombination parameter, Rho */
       args->R = atof(optarg);
@@ -116,12 +116,6 @@ Args *getArgs(int argc, char *argv[]){
     }
     c = getopt(argc, argv, optString);
   }
-  args->inputFiles = argv + optind;
-  args->numInputFiles = argc - optind;
-  if(args->numInputFiles == 0 && !args->h && !args->e && !args->p){
-    printf("ERROR[mlRho]: input must come from file rather than stdin.\n");
-    args->e = 1;
-  }
   return args;
 }
 
@@ -131,6 +125,7 @@ void printUsage(char *version){
   printf("purpose: maximum likelihood estimation of theta and rho\n");
   printf("usage: mlRho [options] [inputFile(s)]\n");
   printf("standard options:\n");
+  printf("\t[-n <FILE> name of database created using formatPro; default: %s\n",DEFAULT_N);
   printf("\t[-c <NUM> minimum coverage; default: %d]\n",MIN_COV);
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");

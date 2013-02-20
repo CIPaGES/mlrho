@@ -9,45 +9,42 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 #include "eprintf.h"
 #include "interface.h"
 #include "tab.h"
 #include "profileTree.h"
 #include "mlComp.h"
 
-void runAnalysis(int fd, Args *args, char *inFile);
+void runAnalysis(Args *args);
 
 int main(int argc, char *argv[]){
   Args *args;
   char *version;
-  int i, fd;
 
-  version = "1.19";
+  version = "1.21";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
     printSplash(version);
   if(args->h || args->e)
     printUsage(version);
-  for(i=0;i<args->numInputFiles;i++){
-    fd = open(args->inputFiles[i],O_RDONLY,0);
-    runAnalysis(fd, args, args->inputFiles[i]);
-    close(fd);
-  }
+  runAnalysis(args);
   free(args);
   freeProfileTree();
   free(progname());
   return 0;
 }
 
-void runAnalysis(int fd, Args *args, char *inFile){
-  Node *indivTree, *pairwTree;
+void runAnalysis(Args *args){
+  Node *pairwTree, *indivTree;
   Result *r;
   int i, status;
   char *headerPi, *headerDelta, *headerRho, *outStrPi; 
   char *outStrDelta1, *outStrDelta2;
   char *outStrRho1, *outStrRho2, *outStrRho3, *outStrRho4;	
   double numPos;
+  FILE *fp;
 
   headerPi = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\n";
   headerDelta = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho=f(delta)\n";
@@ -61,7 +58,7 @@ void runAnalysis(int fd, Args *args, char *inFile){
   outStrRho4 = "%d\t%0f\t%s\t%s\t%s\t%s\n";
   r = (Result *)emalloc(sizeof(Result));
   /* heterozygosity analysis */
-  indivTree = getProfileTree(fd,args, 0);
+  indivTree = getSummarizedProfiles(args);
   numPos = getNumPos();
   if(args->M == 0 && numPos)
     printf("%s", headerPi);
@@ -79,17 +76,17 @@ void runAnalysis(int fd, Args *args, char *inFile){
   /* linkage analysis */
   if(args->T)
     setTestMode();
-  /* make pi & epsilon available for one-param version of delta estimation? */
+  /* make pi & epsilon available for one-param version of delta and rho estimation? */
   if(!args->f){
     setPi(r->pi);      
     setEpsilon(r->ee);
     rhoSetPi(r->pi);
     rhoSetEpsilon(r->ee);
   }
-  if(getNumPos() > 1){
+  if(getNumPos() > 1 && args->M - args->m > 0){
+    fp = iniLinkAna(args);
     for(i=args->m;i<=args->M;i+=args->S){
-      lseek(fd, 0L, 0);
-      pairwTree = getProfileTree(fd,args, i);
+      pairwTree = getProfileTree(fp,args, i);
       if(args->f){
 	if(args->l){
 	  estimateDelta(pairwTree, args, r, 3);

@@ -15,6 +15,7 @@
 #define MIN_COV 4
 #define DEFAULT_S 1
 #define DEFAULT_B 4096
+#define DEFAULT_N "profileDb"
 
 /* define argument container */
 typedef struct args{
@@ -37,11 +38,9 @@ typedef struct args{
   char p;   /* print program information */
   char f;   /* full likelihood analysis over varying distances */
   char T;   /* test mode */
-  char u;   /* input in summary format */
   char h;   /* help message? */
   char e;   /* error message? */
-  char **inputFiles;
-  int numInputFiles;
+  char *n;  /* name of database */
 } Args;
 
 Args *getArgs(int argc, char *argv[]);
