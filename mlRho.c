@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
   Args *args;
   char *version;
 
-  version = "1.24";
+  version = "1.25";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -79,9 +79,9 @@ void runAnalysis(Args *args){
     printf(outStrDeltaRho,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
     fflush(NULL);
   }
+  fclose(fp);
   if(args->I)
     writeLik(args->n,r);
-  fclose(fp);
   free(r);
   freeMem(profilePairs, numProfiles);
 }

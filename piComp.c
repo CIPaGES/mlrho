@@ -52,7 +52,7 @@ Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *resul
   double size;
   FILE *fp;
 
-  if((fp = openLikFile(args->n)) != NULL){
+  if((fp = openLikFile(args->n)) != NULL && !args->I){
     result = readLik(fp,numProfiles,result);
     fclose(fp);
     return result;
@@ -303,6 +303,7 @@ double *getLtwos(){
 void writeLik(char *baseName, Result *result){
   char *fileName;
   int n;
+  double np;
   FILE *fp;
 
   fileName = (char *)emalloc(256*sizeof(char));
@@ -313,6 +314,9 @@ void writeLik(char *baseName, Result *result){
   n = fwrite("lik",sizeof(char),3,fp);
   assert(n == 3);
   n = fwrite(result,sizeof(Result),1,fp);
+  assert(n == 1);
+  np = getNumProfiles();
+  n = fwrite(&np,sizeof(double),1,fp);
   assert(n == 1);
   n = fwrite(getLones(),sizeof(double),getNumProfiles(),fp);
   assert(n == getNumProfiles());
@@ -350,23 +354,22 @@ FILE *openLikFile(char *baseName){
 }
 
 Result *readLik(FILE *fp, int numProfiles, Result *result){
-  char *tag;
   int n;
+  double np;
 
-  tag = (char *)emalloc(4*sizeof(char));
   assert(lOnes == NULL);
   assert(lTwos == NULL);
   fseek(fp,3,SEEK_SET);
-  lOnes = (double *)emalloc(numProfiles*sizeof(double));
-  lTwos = (double *)emalloc(numProfiles*sizeof(double));
   n = fread(result,sizeof(Result),1,fp);
   assert(n == 1);
+  n = fread(&np,sizeof(double),1,fp);
+  assert(n == 1 && np == numProfiles);
+  lOnes = (double *)emalloc(numProfiles*sizeof(double));
+  lTwos = (double *)emalloc(numProfiles*sizeof(double));
   n = fread(lOnes,sizeof(double),numProfiles,fp);
   assert(n == numProfiles);
   n = fread(lTwos,sizeof(double),numProfiles,fp);
   assert(n == numProfiles);
-
-  free(tag);
 
   return result;
 }
