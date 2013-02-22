@@ -12,7 +12,6 @@
 #include <assert.h>
 #include "eprintf.h"
 #include "interface.h"
-#include "tab.h"
 #include "ld.h"
 #include "profile.h"
 #include "profileTree.h"
@@ -25,7 +24,7 @@ int main(int argc, char *argv[]){
   Args *args;
   char *version;
 
-  version = "1.25";
+  version = "2.0";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -34,7 +33,6 @@ int main(int argc, char *argv[]){
     printUsage(version);
   runAnalysis(args);
   free(args);
-  /* freeProfileTree(); */
   free(progname());
   return 0;
 }

@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <math.h>
 #include "eprintf.h"
-#include "tab.h"
 #include "stringUtil.h"
 #include "interface.h"
 #include "profileTree.h"
