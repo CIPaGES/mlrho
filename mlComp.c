@@ -135,3 +135,10 @@ void freeMlComp()
   free(lngamma);
   free(coverages);
 }
+
+Result *newResult(){
+  Result *r;
+  r = (Result *)calloc(1,sizeof(Result));
+  assert(r);
+  return r;
+}

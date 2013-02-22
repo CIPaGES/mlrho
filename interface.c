@@ -17,24 +17,22 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:rThpM:lLm:S:n:";
+  char *optString = "P:E:D:R:t:s:i:hpM:lLm:S:n:I";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
   args->E = INI_EPSILON;
   args->D = INI_DELTA;
-  args->R = INI_RHO;
   args->t = THRESHOLD;
-  args->T = 0;
   args->n = DEFAULT_N;
   args->s = STEP_SIZE;
   args->S = DEFAULT_S;
   args->i = MAX_IT;
+  args->I = 0;
   args->M = INT_MAX;
   args->m = 1;
   args->l = 0;
   args->L = 0;
-  args->r = 0;
   args->h = 0;
   args->e = 0;
   args->p = 0;
@@ -54,9 +52,6 @@ Args *getArgs(int argc, char *argv[]){
     case 'n':                           /* name of database */
       args->n = optarg;
       break;
-    case 'R':                           /* initial recombination parameter, Rho */
-      args->R = atof(optarg);
-      break;
     case 't':                           /* simplex size threshold */
       args->t = atof(optarg);
       break;
@@ -69,6 +64,9 @@ Args *getArgs(int argc, char *argv[]){
     case 'i':                           /* maximum number of iterations */
       args->i = atoi(optarg);
       break;
+    case 'I':                           /* print likelihood values to file */
+      args->I = 1;
+      break;
     case 'd':                           /* distance between pairs of profiles for H0 and H2 computation */
       args->d = atoi(optarg);
       break;
@@ -78,17 +76,11 @@ Args *getArgs(int argc, char *argv[]){
     case 'm':                           /* minimum distance investigated in disequilibrium analysis */
       args->m = atoi(optarg);
       break;
-    case 'T':                           /* test mode for linkage analysis */
-      args->T = 1;
-      break;
     case 'l':                           /* estimate delta */
       args->l = 1;
       break;
     case 'L':                           /* lump "step" distance classes? */
       args->L = 1;
-      break;
-    case 'r':                           /* print profiles */
-      args->r = 1;
       break;
     case 'p':                           /* print program information */
       args->p = 1;
@@ -117,11 +109,8 @@ void printUsage(char *version){
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
+  printf("\t[-I write likelihoods to file; default: likelihoods not written to file]\n");
   printf("\t[-L lump -S distance classes; default: no lumping]\n");
-  printf("\t[-l estimate delta; default: estimate rho]\n");
-  printf("\t[-r print profiles and exit]\n");
-  printf("\t[-T test mode for linkage analysis]\n");
-  printf("\t[-u data in summary format; default: profiles]\n");
   printf("\t\tdefault: use initial estimates of \\epsilon and \\theta]\n");
   printf("\t[-p print information about program and exit]\n");			     
   printf("\t[-h print this help message and exit]\n");

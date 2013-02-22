@@ -54,5 +54,7 @@ double *getLones();
 double *getLtwos();
 
 inline double lOneDelta(int cov, int *profile, double ee);
+void writeLik(char *baseName, Result *result);
+Result *newResult();
 
 #endif

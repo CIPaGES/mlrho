@@ -14,6 +14,8 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
 #include <assert.h>
+#include <string.h>
+#include <sys/stat.h>
 #include "interface.h"
 #include "profile.h"
 #include "mlComp.h"
@@ -21,6 +23,7 @@
 
 double *lOnes = NULL;
 double *lTwos = NULL;
+double numPos;
 
 double likP(Profile *profiles, int numProfiles, double pi, double ee);
 double myP(const gsl_vector *v, void *params);
@@ -29,7 +32,8 @@ double myEconf(double x, void *params);
 void confP(Args *args, Result *result);
 void confE(Args *args, Result *result);
 void compSiteLik(Profile *profiles, int numProfiles, double ee);
-
+FILE *openLikFile(char *baseName);
+Result *readLik(FILE *fp, int numProfiles, Result *result);
 
 /* estimatePi: estimate pi and epsilon using the Nelder-Mead
  * Simplex algorithm; code adapted from Galassi, M., Davies, 
@@ -46,6 +50,13 @@ Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *resul
   size_t iter;
   int status;
   double size;
+  FILE *fp;
+
+  if((fp = openLikFile(args->n)) != NULL){
+    result = readLik(fp,numProfiles,result);
+    fclose(fp);
+    return result;
+  }
 
   np = 2;
   T = gsl_multimin_fminimizer_nmsimplex;
@@ -138,16 +149,14 @@ void compSiteLik(Profile *profiles, int numProfiles, double ee){
 }
 
 double piComp_getNumPos(Profile *profiles, int numProfiles){
-  int i, *coverages;
-  double np;
+  int i;
   
-  coverages = getCoverages();
-  assert(coverages != NULL);
-  np = 0;
-  for(i=0;i<numProfiles;i++)
-    np += profiles[i].n;
-
-  return np;
+  if(profiles){
+    numPos = 0;
+    for(i=0;i<numProfiles;i++)
+      numPos += profiles[i].n;
+  }
+  return numPos;
 }
 
 /* myPconf: called for confidence interval estimation of pi */
@@ -288,4 +297,76 @@ double *getLones(){
 
 double *getLtwos(){
   return lTwos;
+}
+
+
+void writeLik(char *baseName, Result *result){
+  char *fileName;
+  int n;
+  FILE *fp;
+
+  fileName = (char *)emalloc(256*sizeof(char));
+  fileName = strcpy(fileName,baseName);
+  fileName = strcat(fileName,".lik");
+
+  fp = efopen(fileName,"wb");
+  n = fwrite("lik",sizeof(char),3,fp);
+  assert(n == 3);
+  n = fwrite(result,sizeof(Result),1,fp);
+  assert(n == 1);
+  n = fwrite(getLones(),sizeof(double),getNumProfiles(),fp);
+  assert(n == getNumProfiles());
+  n = fwrite(getLtwos(),sizeof(double),getNumProfiles(),fp);
+  assert(n == getNumProfiles());
+  printf("#Likelihoods written to %s\n",fileName);
+  free(fileName);
+  fclose(fp);
+}
+
+FILE *openLikFile(char *baseName){
+  char *fileName;
+  FILE *fp;
+  struct stat stbuf;
+  int n;
+  char *tag;
+
+  fileName = (char *)emalloc(256*sizeof(char));
+  tag = (char *)emalloc(4*sizeof(char));
+  fileName = strcpy(fileName,baseName);
+  fileName = strcat(fileName,".lik");
+  if(stat(fileName,&stbuf) != -1){
+    fp = efopen(fileName,"rb");
+    n = fread(tag,sizeof(char),3,fp);
+    tag[3] = '\0';
+    assert(n == 3);
+    if(strcmp(tag,"lik") != 0){
+      assert(0);
+    }
+  }else
+    fp = NULL;
+  free(tag);
+  free(fileName);
+  return fp;
+}
+
+Result *readLik(FILE *fp, int numProfiles, Result *result){
+  char *tag;
+  int n;
+
+  tag = (char *)emalloc(4*sizeof(char));
+  assert(lOnes == NULL);
+  assert(lTwos == NULL);
+  fseek(fp,3,SEEK_SET);
+  lOnes = (double *)emalloc(numProfiles*sizeof(double));
+  lTwos = (double *)emalloc(numProfiles*sizeof(double));
+  n = fread(result,sizeof(Result),1,fp);
+  assert(n == 1);
+  n = fread(lOnes,sizeof(double),numProfiles,fp);
+  assert(n == numProfiles);
+  n = fread(lTwos,sizeof(double),numProfiles,fp);
+  assert(n == numProfiles);
+
+  free(tag);
+
+  return result;
 }

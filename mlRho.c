@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
   Args *args;
   char *version;
 
-  version = "1.23";
+  version = "1.24";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)
@@ -54,7 +54,7 @@ void runAnalysis(Args *args){
   headerDeltaRho = "d\tn\ttheta\t\t\t\tepsilon\t\t\t\t-log(L)\t\tdelta\t\t\t\trho\n";
   outStrPi = "%d\t%.0f\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e\n";
   outStrDeltaRho = "%d\t%.0f\t\t\t\t\t\t\t\t\t%8.2e\t%8.2e<%8.2e<%8.2e\t%8.2e<%8.2e<%8.2e\n";
-  r = (Result *)emalloc(sizeof(Result));
+  r = newResult();
   /* heterozygosity analysis */
   readProfiles(args->n);
   numProfiles = getNumProfiles();
@@ -77,7 +77,10 @@ void runAnalysis(Args *args){
     profilePairs = getProfilePairs(numProfiles, contigDescr, fp, args, i);
     r = estimateDelta(profilePairs,numProfiles,args,r,i);
     printf(outStrDeltaRho,i,getNumPos(),r->l,r->dLo,r->de,r->dUp,r->rLo,r->rh,r->rUp);
+    fflush(NULL);
   }
+  if(args->I)
+    writeLik(args->n,r);
   fclose(fp);
   free(r);
   freeMem(profilePairs, numProfiles);
@@ -108,5 +111,3 @@ void freeMem(Node **profilePairs, int numProfiles){
   free(profiles);
   freeMlComp();
 }
-
-

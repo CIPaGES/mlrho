@@ -18,7 +18,7 @@
 #include "profileTree.h"
 #include "ld.h"
 
-int numPos;
+double numPos;
 Node **resetProfilePairs(Node **profilePairs, int numProfiles);
 Node **countPairs(Node **pairs, int numProfiles, ContigDescr *contigDescr, FILE *fp, int dist);
 

@@ -215,7 +215,7 @@ double iterate(Args *args, gsl_root_fsolver *s, double xLo, double xHi){
     xHi = gsl_root_fsolver_x_upper(s);
     status = gsl_root_test_interval(xLo, xHi, 0, args->t);
   }while(status == GSL_CONTINUE && iter < args->i);
-  
+
   return r;
 }
 

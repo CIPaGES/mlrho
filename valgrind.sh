@@ -2,5 +2,5 @@
 #valgrind --leak-check=full --show-reachable=yes --log-file="mlRho.val" --leak-check=full ./mlRho -u -M 0 test.sum
 #valgrind --track-origins=yes --log-file="mlRho.val" ./mlRho test.pro -m 1000 -M 1005 -l 
 #valgrind --track-origins=yes --log-file="mlRho.val" ./mlRho test1.pro -m 2 -M 3 -l 
-valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file="mlRho.val" ./mlRho -m 1000 -M 1001
-
+#valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file="mlRho.val" ./mlRho -m 1000 -M 1001 -I -n ~/Research/Ongoing/MlRho/assembly-files/Diatom_F_cylindrus -I
+valgrind --leak-check=full --show-reachable=yes --track-origins=yes --log-file="mlRho.val" ./mlRho -m 1000 -M 1001 -I
