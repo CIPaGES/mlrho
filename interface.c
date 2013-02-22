@@ -17,7 +17,7 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   int c;
-  char *optString = "P:E:D:R:t:s:i:c:rThfpM:lLm:S:b:n:";
+  char *optString = "P:E:D:R:t:s:i:rThpM:lLm:S:n:";
 
   args = (Args *)emalloc(sizeof(Args));
   args->P = INI_PI;
@@ -25,15 +25,12 @@ Args *getArgs(int argc, char *argv[]){
   args->D = INI_DELTA;
   args->R = INI_RHO;
   args->t = THRESHOLD;
-  args->c = MIN_COV;
   args->T = 0;
   args->n = DEFAULT_N;
   args->s = STEP_SIZE;
   args->S = DEFAULT_S;
   args->i = MAX_IT;
   args->M = INT_MAX;
-  args->b = DEFAULT_B;
-  args->f = 0;
   args->m = 1;
   args->l = 0;
   args->L = 0;
@@ -75,17 +72,11 @@ Args *getArgs(int argc, char *argv[]){
     case 'd':                           /* distance between pairs of profiles for H0 and H2 computation */
       args->d = atoi(optarg);
       break;
-    case 'c':                           /* minimum coverage */
-      args->c = atoi(optarg);
-      break;
     case 'M':                           /* maximum distance investigated in disequilibrium analysis */
       args->M = atoi(optarg);
       break;
     case 'm':                           /* minimum distance investigated in disequilibrium analysis */
       args->m = atoi(optarg);
-      break;
-    case 'b':                           /* size of buffer for reading input data */
-      args->b = atoi(optarg);
       break;
     case 'T':                           /* test mode for linkage analysis */
       args->T = 1;
@@ -98,9 +89,6 @@ Args *getArgs(int argc, char *argv[]){
       break;
     case 'r':                           /* print profiles */
       args->r = 1;
-      break;
-    case 'f':                           /* full likelihood analysis for delta computation */
-      args->f = 1;
       break;
     case 'p':                           /* print program information */
       args->p = 1;
@@ -126,7 +114,6 @@ void printUsage(char *version){
   printf("usage: mlRho [options] [inputFile(s)]\n");
   printf("standard options:\n");
   printf("\t[-n <FILE> name of database created using formatPro; default: %s\n",DEFAULT_N);
-  printf("\t[-c <NUM> minimum coverage; default: %d]\n",MIN_COV);
   printf("\t[-m <NUM> minimum distance analyzed in rho computation; default: 1]\n");
   printf("\t[-M <NUM> maximum distance analyzed in rho computation; default: all]\n");
   printf("\t[-S <NUM> step size in rho computation; default: %d]\n",DEFAULT_S);
@@ -135,7 +122,6 @@ void printUsage(char *version){
   printf("\t[-r print profiles and exit]\n");
   printf("\t[-T test mode for linkage analysis]\n");
   printf("\t[-u data in summary format; default: profiles]\n");
-  printf("\t[-f full likelihood computation over varying distances (slow);\n");
   printf("\t\tdefault: use initial estimates of \\epsilon and \\theta]\n");
   printf("\t[-p print information about program and exit]\n");			     
   printf("\t[-h print this help message and exit]\n");
@@ -146,7 +132,6 @@ void printUsage(char *version){
   printf("\t[-D <NUM> initial delta value; default: %10.3e]\n",INI_DELTA);
   printf("\t[-t <NUM> simplex size threshold; default: %10.3e]\n",THRESHOLD);
   printf("\t[-s <NUM> size of first step in ML estimation; default: %10.3e]\n",STEP_SIZE);
-  printf("\t[-b <NUM> size of buffer for reading input; default: %d]\n",DEFAULT_B);
   exit(0);
 }
 

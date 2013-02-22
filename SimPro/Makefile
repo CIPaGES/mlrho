@@ -2,14 +2,14 @@ CC=gcc
 CFLAGS= -O3 -Wall -Wshadow -pedantic -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -DVER32 -I/opt/local/include/ -L/opt/local/lib/#  -m64
 
 # The source files, object files, libraries and executable name.
-SRCFILES= testMlPi.c interface.c eprintf.c ranNum.c
-OBJFILES= testMlPi.o interface.o eprintf.o ranNum.o
+SRCFILES= simPro.c interface.c eprintf.c ranNum.c
+OBJFILES= simPro.o interface.o eprintf.o ranNum.o
 
 LIBS= -lm
 
-EXECFILE= testMlPi
-DIRECTORY= TestMlPi
-VERSION= 0.4
+EXECFILE= simPro
+DIRECTORY= SimPro
+VERSION= 0.8
 
 # The make rule for the executable
 .PHONY : all

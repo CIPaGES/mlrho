@@ -15,19 +15,20 @@
 #include <gsl/gsl_roots.h>
 #include <assert.h>
 #include "interface.h"
-#include "profileTree.h"
+#include "profile.h"
 #include "mlComp.h"
 #include "eprintf.h"
 
-Node *root;
-double likelihood;
+double *lOnes = NULL;
+double *lTwos = NULL;
 
-void likP(Node *p, double pi, double ee);
+double likP(Profile *profiles, int numProfiles, double pi, double ee);
 double myP(const gsl_vector *v, void *params);
 double myPconf(double x, void *params);
 double myEconf(double x, void *params);
 void confP(Args *args, Result *result);
 void confE(Args *args, Result *result);
+void compSiteLik(Profile *profiles, int numProfiles, double ee);
 
 
 /* estimatePi: estimate pi and epsilon using the Nelder-Mead
@@ -36,19 +37,23 @@ void confE(Args *args, Result *result);
  * Rossi, F. (2005). GNU Scientific Library Reference Manual. 
  * Edition 1.6, for GSL Version 1.6, 17 March 2005, p 472f.
  */
-void estimatePi(Node *r, Args *args, Result *result){
-  size_t np = 2;
-  const gsl_multimin_fminimizer_type *T =  gsl_multimin_fminimizer_nmsimplex;
-  gsl_multimin_fminimizer *s = NULL;
+Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *result){
+  size_t np;
+  const gsl_multimin_fminimizer_type *T;
+  gsl_multimin_fminimizer *s;
   gsl_vector *ss, *x;
   gsl_multimin_function minex_func;
-  size_t iter = 0;
+  size_t iter;
   int status;
   double size;
 
+  np = 2;
+  T = gsl_multimin_fminimizer_nmsimplex;
+  s = NULL;
+  iter = 0;
+
   /*set up likelihood computation */
-  root = r;
-  iniMlComp(root,0);
+  iniMlComp(profiles, numProfiles);
   /* initialize vertex size vector */
   ss = gsl_vector_alloc(np);
   /* set all step sizes */
@@ -66,14 +71,10 @@ void estimatePi(Node *r, Args *args, Result *result){
   do{
     iter++;
     status = gsl_multimin_fminimizer_iterate(s);
-
     if(status)
       break;
-
     size = gsl_multimin_fminimizer_size(s);
     status = gsl_multimin_test_size(size, args->t);
-
-
   }while(status == GSL_CONTINUE && iter < args->i);
   if(GSL_CONTINUE)
     assert("ERROR[mlRho]: increase the number of iterations using option -i.\n");
@@ -88,12 +89,13 @@ void estimatePi(Node *r, Args *args, Result *result){
   gsl_vector_free(x);
   gsl_vector_free(ss);
   gsl_multimin_fminimizer_free(s);
-  freeMlComp();
-
+  compSiteLik(getProfiles(),getNumProfiles(),result->ee);
+  return result;
 }
 /* myF: function called during the minimization procedure */
 double myP(const gsl_vector* v, void *params){
   double pi, ee;
+  double likelihood;
 
   pi = gsl_vector_get(v, 0);
   ee = gsl_vector_get(v, 1);
@@ -101,35 +103,61 @@ double myP(const gsl_vector* v, void *params){
   if(pi < 0 || ee < 0 || pi > 1 || ee > 1){
     return DBL_MAX;
   }
-  likP(root, pi, ee);
+  likelihood = likP(getProfiles(), getNumProfiles(), pi, ee);
   return -likelihood;
 }
 
-/* lik: traverse profile tree and compute likelihood */
-void likP(Node *p, double pi, double ee){
-  double l;
-  int i, c;
-  
-  if(p != NULL){
-    likP(p->left, pi, ee);
-    c = 0;
-    for(i=0;i<4;i++)
-      c += p->profile1[i];
-    l = lOne(c, p->profile1, ee) * (1.0 - pi)	\
-      + lTwo(c, p->profile1, ee) * pi;
+double likP(Profile *profiles, int numProfiles, double pi, double ee){
+  int i;
+  int *coverages;
+  double l, likelihood, lOneLoc, lTwoLoc;
+
+  coverages = getCoverages();
+  likelihood = 0.;
+  for(i=0;i<numProfiles;i++){
+    lOneLoc = lOne(coverages[i],profiles[i].profile,ee);
+    lTwoLoc = lTwo(coverages[i],profiles[i].profile,ee);
+    l = lOneLoc * (1.0 - pi) + lTwoLoc * pi;
     if(l>0)
-      likelihood += (log(l) * p->n);
-    likP(p->right, pi, ee);
+      likelihood += log(l) * profiles[i].n;
   }
+  return likelihood;
+}
+
+void compSiteLik(Profile *profiles, int numProfiles, double ee){
+  int i;
+  int *coverages;
+
+  lOnes = (double *)emalloc(numProfiles*sizeof(double));
+  lTwos = (double *)emalloc(numProfiles*sizeof(double));
+  coverages = getCoverages();
+  for(i=0;i<numProfiles;i++){
+    lOnes[i] = lOne(coverages[i],profiles[i].profile,ee);
+    lTwos[i] = lTwo(coverages[i],profiles[i].profile,ee);
+  }
+}
+
+double piComp_getNumPos(Profile *profiles, int numProfiles){
+  int i, *coverages;
+  double np;
+  
+  coverages = getCoverages();
+  assert(coverages != NULL);
+  np = 0;
+  for(i=0;i<numProfiles;i++)
+    np += profiles[i].n;
+
+  return np;
 }
 
 /* myPconf: called for confidence interval estimation of pi */
 double myPconf(double x, void *params){
   Result *res;
+  double likelihood;
 
   res = (Result *)params;
-  likelihood = 0;
-  likP(root, x, res->ee);
+
+  likelihood = likP(getProfiles(), getNumProfiles(), x, res->ee);
 
   return likelihood + res->l + 2;
 }
@@ -138,10 +166,10 @@ double myPconf(double x, void *params){
 double myEconf(double x, void *params){
   Result *res;
   double l;
+  double likelihood;
 
   res = (Result *)params;
-  likelihood = 0;
-  likP(root, res->pi, x);
+  likelihood = likP(getProfiles(), getNumProfiles(), res->pi, x);
 
   l =  likelihood + res->l + 2;
   return l;
@@ -252,4 +280,12 @@ void confP(Args *args, Result *result){
     result->pLo = r;
   }
   gsl_root_fsolver_free(s);
+}
+
+double *getLones(){
+  return lOnes;
+}
+
+double *getLtwos(){
+  return lTwos;
 }

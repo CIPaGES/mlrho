@@ -18,36 +18,32 @@ Args *args;
 
 Args *getArgs(int argc, char *argv[]){
   char c;
-  char *optString = "D:H:P:c:s:i:lhd:";
+  char *optString = "D:t:P:c:s:C:lhv";
 
   args = (Args *)emalloc(sizeof(Args));
 
   args->s = DEFAULT_S;
   args->h = 0;
   args->e = 0;
-  args->p = 0;
+  args->v = 0;
   args->D = DEFAULT_D;
-  args->P = DEFAULT_P;
-  args->H = DEFAULT_H;
+  args->E = DEFAULT_E;
+  args->t = DEFAULT_T;
   args->c = DEFAULT_C;
-  args->i = DEFAULT_I;
+  args->C = DEFAULT_CC;
   args->l = 0;
-  args->d = NULL;
 
   c = getopt(argc, argv, optString);
   while(c != -1){
     switch(c){
-    case 'd':                           /* data file */
-      args->d = optarg;
-      break;
     case 's':                           /* number of sites */
       args->s = atoi(optarg);
       break;
-    case 'H':                           /* heterozygosity */
-      args->H = atof(optarg);
+    case 't':                           /* theta */
+      args->t = atof(optarg);
       break;
-    case 'P':                           /* phi */
-      args->P = atof(optarg);
+    case 'E':                           /* epsilon */
+      args->E = atof(optarg);
       break;
     case 'D':                           /* delta */
       args->D = atof(optarg);
@@ -55,14 +51,14 @@ Args *getArgs(int argc, char *argv[]){
     case 'c':                           /* coverage */
       args->c = atoi(optarg);
       break;
-    case 'i':                           /* number of iterations */
-      args->i = atoi(optarg);
+    case 'C':                           /* number of contigs */
+      args->C = atoi(optarg);
       break;
     case 'l':                           /* compute likelihood */
       args->l = 1;
       break;
-    case 'p':                           /* print program information */
-      args->p = 1;
+    case 'v':                           /* print program information */
+      args->v = 1;
       break;
     case '?':                           /* fall-through is intentional */
     case 'h':                           /* print help */
@@ -80,19 +76,26 @@ Args *getArgs(int argc, char *argv[]){
 
 
 void printUsage(char *version){
-  printf("testMlDiseq version %s written by Michael Lynch, adaped by Bernhard Haubold\n", version);
-  printf("purpose: maximum likelihood estimation of linkage disequilibrium from resequencing data\n");
-  printf("usage: testMlDiseq [options]\n");
+  printf("simPro version %s written by Michael Lynch, adaped by Bernhard Haubold\n", version);
+  printf("Usage: simPro [options]\n");
+  printf("Simulate data for maximum likelihood estimation of linkage disequilibrium from resequencing data\n");
+  printf("Example: simPro > test.dat\n");
   printf("options:\n");
-  printf("\t[-H <NUM> heterozygosity; default: NUM=%f]\n",DEFAULT_H);
-  printf("\t[-P <NUM> error probability, phi; default: NUM=%f]\n",DEFAULT_P);
+  printf("\t[-t <NUM> mutation rate, theta; default: NUM=%f]\n",DEFAULT_T);
+  printf("\t[-E <NUM> error probability, epsilon; default: NUM=%f]\n",DEFAULT_E);
   printf("\t[-D <NUM> linkage disequilibrium for homozygosity, delta; default: NUM=%f]\n",DEFAULT_D);
   printf("\t[-c <NUM> coverage; default: %d]\n",DEFAULT_C);
-  printf("\t[-s <NUM> number of sites; default: %d]\n",DEFAULT_S);
-  printf("\t[-i <NUM> number of iterations; default: %d]\n",DEFAULT_I);
-  printf("\t[-d <FILE> print data to FILE; default: don't print data]\n");
-  printf("\t[-l compute likelihood]\n");
-  printf("\t[-p print information about program and exit]\n");			     
+  printf("\t[-C <NUM> number of contigs; default: %d]\n",DEFAULT_CC);
+  printf("\t[-s <NUM> pairs of sites per contig; default: %d]\n",DEFAULT_S);
+  printf("\t[-v print information about program and exit]\n");			     
   printf("\t[-h print this help message and exit]\n");
+  exit(0);
+}
+
+void printSplash(char *version){
+  printf("%s %s\n",progname(),version);
+  printf("Written by Michael Lynch, adapted by Bernhard Haubold.\n");
+  printf("Distributed under the GNU General Public License.\n");
+  printf("Please send bug reports to haubold@evolbio.mpg.de\n");
   exit(0);
 }

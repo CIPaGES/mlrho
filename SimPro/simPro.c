@@ -3,7 +3,7 @@
    1) generate site-specific sequence data for random genomic sequence, with arbitrary heterozygosity
    and read-error rates;
    2) do so with pairs of sites assumed to have correlated homozygosity/heterozygosity;
-   3) use maximum likelihood to estimate average genome-wide nucleotide diversity and across-locus correlation.
+   [3) use maximum likelihood to estimate average genome-wide nucleotide diversity and across-locus correlation.]
 
    NOTE: This program can also be used to get the statistics for single-site analyses by setting the initial
    disequilibrium coefficient = 0.0, and not interating over it.
@@ -12,6 +12,9 @@
    Data are for a single diploid individual.
    Coverage is assumed to be the same at all sites.
    Assumes nucleotide frequencies are known without error.
+
+   Author: Mike Lynch
+   Adapted by Bernhard Haubold, October 22, 2012
 */
 #include <stdio.h>
 #include <math.h>
@@ -51,38 +54,37 @@ int main(int argc, char *argv[]){
   double coef = 0;
   double binopar[11][11];
   double sumhet, sumerr, sumdis, sumsqhet, sumsqerr, sumsqdis, totests;
-  double meanhet, meanerr, meandis, msqhet, msqerr, msqdis, varhet, varerr, vardis, sdhet, sderr, sddis;
+  /* double meanhet, meanerr, meandis, msqhet, msqerr, msqdis; */
+  /* double varhet, varerr, vardis; */
+  /* double sdhet, sderr, sddis; */
   double errfit[51], disfit[51], hetfit[51];
   int nhetiters, ndisiters, nerriters;	/* number of spaces on the grid search for hetero, delta, and phi */
   double hetero, phi, delta;
   int nsites, niters, coverage;
   Args *args;
   char *version;
-  FILE *fp;
   int i;
   int ij = 1802;
   int kl = 9373;
   int pos = 1;
 
-  ij = clock() % 31329; 
+  ij = time(NULL) % 31329; 
   rmarin(ij,kl);
 
   stream = stdout;
 
   args = getArgs(argc, argv);
-  version = "0.7";
+  version = "0.8";
   if(args->h || args->e)
     printUsage(version);
-  if(args->d)
-    fp = efopen(args->d,"w");
-  else
-    fp = NULL;
-  hetero = args->H;
-  phi = args->P;
+  if(args->v)
+    printSplash(version);
+  hetero = args->t;
+  phi = args->E;
   delta = args->D;
   coverage = args->c;
   nsites = args->s;
-  niters = args->i;
+  niters = args->C;
 
   /* SET THE INITIAL NUCEOTIDE FREQUENCIES. */
   pnuc[1] = 0.25;			/* frequency of A */
@@ -157,7 +159,7 @@ int main(int argc, char *argv[]){
     }
   /* Loop over the number of different simulations. */
   for (iters = 1; iters <= niters; ++iters) {
-    fprintf(fp,">DataSet_%d\n",iters); 
+    printf(">DataSet_%d\n",iters); 
     /* Zero the likelihood. */
     for (rg = 1; rg <= (nhetiters + 1); ++rg) 				
       for (sg = 1; sg <= (ndisiters + 1); ++sg) 
@@ -432,16 +434,14 @@ int main(int argc, char *argv[]){
 	    }
 	  }
 	}
-	if(args->d){
-	  fprintf(fp,"%d",pos++);
+	  printf("%d",pos++);
 	  for(i=1;i<5;i++)
-	    fprintf(fp,"\t%d",numn[i]); 
-	  fprintf(fp,"\n");
-	  fprintf(fp,"%d",pos++);
+	    printf("\t%d",numn[i]); 
+	  printf("\n");
+	  printf("%d",pos++);
 	  for(i=1;i<5;i++)
-	    fprintf(fp,"\t%d",numn2[i]); 
-	  fprintf(fp,"\n");
-	}
+	    printf("\t%d",numn2[i]); 
+	  printf("\n");
 	if(args->l){   /* likelihood computation */
 	  /* Add to the likelihood values for all combinations of values along the grid. */
 	  for (mhg = 1; mhg <= (nhetiters + 1); ++mhg) {   /* loop over possible heterozygosities */
@@ -495,19 +495,19 @@ int main(int argc, char *argv[]){
     if(args->l)
       printf("pi:             %8.2e             epsilon:             %8.2e             delta:             %8.2e             -log(L): %8.2e\n",besthet,besterror,bestdis,-maxll);
   }
-  meanhet = sumhet / totests;
-  meanerr = sumerr / totests;
-  meandis = sumdis / totests;
-  msqhet = sumsqhet / totests;
-  msqerr = sumsqerr / totests;
-  msqdis = sumsqdis /totests;
-  varhet = (totests/(totests - 1.0)) * (msqhet - pow(meanhet,2.0));
-  varerr = (totests/(totests - 1.0)) * (msqerr - pow(meanerr,2.0));
-  vardis = (totests/(totests - 1.0)) * (msqdis - pow(meandis,2.0));
+  /* meanhet = sumhet / totests; */
+  /* meanerr = sumerr / totests; */
+  /* meandis = sumdis / totests; */
+  /* msqhet = sumsqhet / totests; */
+  /* msqerr = sumsqerr / totests; */
+  /* msqdis = sumsqdis /totests; */
+  /* varhet = (totests/(totests - 1.0)) * (msqhet - pow(meanhet,2.0)); */
+  /* varerr = (totests/(totests - 1.0)) * (msqerr - pow(meanerr,2.0)); */
+  /* vardis = (totests/(totests - 1.0)) * (msqdis - pow(meandis,2.0)); */
 
-  sdhet = pow(varhet,0.5);
-  sderr = pow(varerr,0.5);
-  sddis = pow(vardis,0.5);
+  /* sdhet = pow(varhet,0.5); */
+  /* sderr = pow(varerr,0.5); */
+  /* sddis = pow(vardis,0.5); */
 
 /*   printf("\n"); */
 /*   printf("      mean heterozygosity = %8.7f \n",meanhet);  */
@@ -516,7 +516,6 @@ int main(int argc, char *argv[]){
 /*   printf("\n"); */
 
 /*   fprintf(stream, "%8.7f , %8.7f , %d, %d ,, %8.7f , %8.7f ,, %8.7f , %8.7f ,,, %8.7f ,, %8.7f , %8.7f ,, %d\n", hetero , phi , coverage , nsites , meanhet, sdhet, meanerr , sderr, delta, meandis, sddis, niters); */
-  fclose(fp);
   exit(0);
 }
 

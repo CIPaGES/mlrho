@@ -4,8 +4,13 @@
  * Date: Thu Feb 19 08:49:00 2009
  * License: GNU General Public
  **************************************************/
+#ifndef MLCOMP
+#define MLCOMP
+
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_multimin.h>
+#include "profile.h"
+#include "profileTree.h"
 
 #define MAX_ITER 1000
 
@@ -28,12 +33,15 @@ typedef struct result{
   char type;   /* parameter type */
 }Result;
 
-void estimatePi(Node *r, Args *args, Result *res);
-void estimateDelta(Node *r, Args *args, Result *res, int np);
-int estimateRho(Node *r, Args *args, Result *res, int np);
+Result *estimatePi(Profile *profiles, int numProfiles, Args *args, Result *result);
+Result *estimateDelta(Node **profilePairs, int numProfiles, Args *args, Result *result, int dist);
+double piComp_getNumPos(Profile *profiles, int numProfiles);
+double deltaComp_getNumPos();
+/* void estimateDelta(Node *r, Args *args, Result *res, int np); */
+/* int estimateRho(Node *r, Args *args, Result *res, int np); */
 inline double lOne(int cov, int *profile, double ee);
 inline double lTwo(int cov, int *profile, double ee);
-void iniMlComp(Node *node, int d);
+void iniMlComp(Profile *profiles, int numProfile);
 void setPi(double pi);
 void setEpsilon(double ee);
 void rhoSetPi(double pi);
@@ -41,4 +49,10 @@ void rhoSetEpsilon(double ee);
 void freeMlComp();
 void setFreqNuc(double *f);
 void setMaxCov(int m);
-void compS();
+int *getCoverages();
+double *getLones();
+double *getLtwos();
+
+inline double lOneDelta(int cov, int *profile, double ee);
+
+#endif

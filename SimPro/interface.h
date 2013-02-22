@@ -18,22 +18,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
  *****************************************************************************/ 
 
-#define DEFAULT_S 100000
-#define DEFAULT_P 0.00046
-#define DEFAULT_H 0.0001
-#define DEFAULT_C 4
-#define DEFAULT_I 1000
-
+#define DEFAULT_S 100000 /* number of pairs of sites */
+#define DEFAULT_E 0.001  /* read-error rate */
+#define DEFAULT_T 0.01   /* average nucleotide heterozygosity */
+#define DEFAULT_D 0.1    /* correlation of zygosity */
+#define DEFAULT_C 5      /* coverage per site */
+#define DEFAULT_CC 10    /* number of contigs to simulate */
 
 /* define argument container */
 typedef struct args{
-  char *d; /* data file */
-  float P; /* error rate, phi */
-  float H; /* heterozygosity */
+  float E; /* epsilon */
+  float t; /* theta */
+  float D; /* delta */
   int c;   /* coverage */
+  int C;   /* number of contigs */
   int s;   /* number of sites */
-  int i;   /* number of iterations */
-  char p;  /* print program information */
+  char l;  /* compute likelihood */
+  char v;  /* print program information */
   char h;  /* help message? */
   char e;  /* error message? */
 } Args;
