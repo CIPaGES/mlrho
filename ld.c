@@ -41,8 +41,10 @@ FILE *iniLdAna(Args *args){
   assert(numRead == 1);
   cp->n = n;
   cp->len = (int *)emalloc(n*sizeof(int));
-  numRead = fread(cp->len,sizeof(int),n,fp);
-  assert(numRead == n);
+  for(i=0;i<cp->n;i++){
+    numRead = fread(&cp->len[i],sizeof(int),1,fp);
+    assert(numRead == 1);
+  }
   fclose(fp);
   max = 0;
   for(i=0;i<n;i++){

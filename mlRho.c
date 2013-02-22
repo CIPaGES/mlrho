@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
   Args *args;
   char *version;
 
-  version = "2.0";
+  version = "2.1";
   setprogname2("mlRho");
   args = getArgs(argc, argv);
   if(args->p)

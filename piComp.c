@@ -354,7 +354,7 @@ FILE *openLikFile(char *baseName){
 }
 
 Result *readLik(FILE *fp, int numProfiles, Result *result){
-  int n;
+  int n, i, sod;
   double np;
 
   assert(lOnes == NULL);
@@ -362,14 +362,18 @@ Result *readLik(FILE *fp, int numProfiles, Result *result){
   fseek(fp,3,SEEK_SET);
   n = fread(result,sizeof(Result),1,fp);
   assert(n == 1);
-  n = fread(&np,sizeof(double),1,fp);
+  sod = sizeof(double);
+  n = fread(&np,sod,1,fp);
   assert(n == 1 && np == numProfiles);
-  lOnes = (double *)emalloc(numProfiles*sizeof(double));
-  lTwos = (double *)emalloc(numProfiles*sizeof(double));
-  n = fread(lOnes,sizeof(double),numProfiles,fp);
-  assert(n == numProfiles);
-  n = fread(lTwos,sizeof(double),numProfiles,fp);
-  assert(n == numProfiles);
-
+  lOnes = (double *)emalloc(numProfiles*sod);
+  lTwos = (double *)emalloc(numProfiles*sod);
+  for(i=0;i<numProfiles;i++){
+    n = fread(&lOnes[i],sod,1,fp);
+    assert(n == 1);
+  }
+  for(i=0;i<numProfiles;i++){
+    n = fread(&lTwos[i],sod,1,fp);
+    assert(n == 1);
+  }
   return result;
 }

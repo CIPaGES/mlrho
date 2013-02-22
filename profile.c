@@ -18,7 +18,7 @@ int thisNumProfiles;
 
 void readProfiles(char *baseName){
   char *fileName, tag;
-  int i, numProfiles, numRead;
+  int i, numProfiles, numRead, sop;
   Profile *profiles;
   FILE *fp;
 
@@ -32,9 +32,12 @@ void readProfiles(char *baseName){
   assert(numRead == 1);
   numRead = fread(&numProfiles,sizeof(int),1,fp);
   assert(numRead == 1);
-  profiles = (Profile *)emalloc(numProfiles*sizeof(Profile));
-  numRead = fread(profiles,sizeof(Profile),numProfiles,fp);
-  assert(numRead == numProfiles);
+  sop = sizeof(Profile);
+  profiles = (Profile *)emalloc(numProfiles*sop);
+  for(i=0;i<numProfiles;i++){
+    numRead = fread(&profiles[i],sop,1,fp);
+    assert(numRead == 1);
+  }
   setProfiles(profiles);
   setNumProfiles(numProfiles);
   fclose(fp);

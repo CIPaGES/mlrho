@@ -53,14 +53,16 @@ Node **resetProfilePairs(Node **profilePairs, int numProfiles){
 }
 
 Node **countPairs(Node **pairs, int numProfiles, ContigDescr *contigDescr, FILE *fp, int dist){
-  int a, b, i, l, r, tmp, numRead;
+  int a, b, i, j, l, r, tmp, numRead;
   Position *pb;
   
   pb = contigDescr->posBuf;
   fseek(fp,3,SEEK_SET);
   for(i=0;i<contigDescr->n;i++){
-    numRead = fread(pb,sizeof(Position),contigDescr->len[i],fp);
-    assert(numRead == contigDescr->len[i]);
+    for(j=0;j<contigDescr->len[i];j++){
+      numRead = fread(&pb[j],sizeof(Position),1,fp);
+      assert(numRead == 1);
+    }
     l = 0;
     r = 0;
     while(r<contigDescr->len[i]){
